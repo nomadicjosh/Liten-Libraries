@@ -4,7 +4,7 @@ namespace app\src;
  * Liten - PHP 5 micro framework
  * 
  * @link        http://www.litenframework.com
- * @version     1.0.0
+ * @version     1.0.1
  * @package     Liten
  * 
  * The MIT License (MIT)
@@ -40,72 +40,72 @@ class Cache
 	/**
 	 * The path to the cache file folder
 	 *
-     * @access private
-     * @since 1.0.0
+     * @access protected
+     * @since 1.0.1
 	 * @var string
 	 */
-	private $_cachepath = CACHE_PATH;
+	protected $_cachepath = CACHE_PATH;
 	
 	/**
 	 * The key name of the cache file
 	 *
      * @access private
-     * @since 1.0.0
+     * @since 1.0.1
 	 * @var string
 	 */
-	private $_cachename = 'default';
+	public $cachename = 'default';
 	
 	/**
 	 * The cache file extension
 	 *
-     * @access private
-     * @since 1.0.0
+     * @access protected
+     * @since 1.0.1
 	 * @var string
 	 */
-	private $_extension = '.page';
+	protected $extension = '.page';
 	
 	/**
 	 * Time to live for cache file
 	 *
      * @access private
-     * @since 1.0.0
+     * @since 1.0.1
 	 * @var int
 	 */
-	private $_setTTL = '3600';
+	public $setTTL = '3600';
 	
 	/**
 	 * Full location of cache file
 	 *
-     * @access private
-     * @since 1.0.0
+     * @access protected
+     * @since 1.0.1
 	 * @var string
 	 */
-	private $_cachefile;
+	protected $_cachefile;
 	
 	/**
 	 * Execution Time
 	 *
-     * @access private
-     * @since 1.0.0
+     * @access protected
+     * @since 1.0.1
 	 * @var float
 	 */
-	private $_starttime;
+	protected $_starttime;
 	
 	/**
 	 * Logs errors that may occur
 	 *
-     * @access private
-     * @since 1.0.0
+     * @access protected
+     * @since 1.0.1
 	 * @var float
 	 */
-	private $_log;
+	protected $_log;
 	
 	public function __construct($name='') {
-		$this->_cachename = $name;
+		$this->cachename = $name;
 		
 		if(!is_dir($this->_cachepath) || !is_writeable($this->_cachepath)) mkdir($this->_cachepath, 0755);
 		
-		$this->_cachefile = $this->_cachepath . md5($this->_cachename) . $this->_extension;
+		$this->_cachefile = $this->_cachepath . md5($this->cachename) . $this->extension;
 		
 		$mtime = microtime();
    		$mtime = explode(" ",$mtime);
@@ -117,14 +117,14 @@ class Cache
 	 * Sets objects that should be cached.
 	 * 
      * @access public
-     * @since 1.0.0
+     * @since 1.0.1
 	 * @param string (required) $key Prefix of the cache file
 	 * @param mixed (required) $data The object that should be cached
 	 * @return mixed
 	 */
 	public function set($key, $data) {
 		$values = serialize($data);
-		$cachefile = $this->_cachepath . $key . $this->_extension;
+		$cachefile = $this->_cachepath . $key . $this->extension;
 		$cache = fopen($cachefile, 'w');
 		if($cache) {
 			fwrite($cache, $values);
@@ -138,14 +138,14 @@ class Cache
 	 * Cached data by its Prefix
 	 * 
      * @access public
-     * @since 1.0.0
+     * @since 1.0.1
 	 * @param string (required) $key Returns cached objects by its key.
 	 * @return mixed
 	 */
 	public function get($key) {
-		$cachefile = $this->_cachepath . $key . $this->_extension;
+		$cachefile = $this->_cachepath . $key . $this->extension;
 		$file = fopen($cachefile, 'r');
-		if (filemtime($cachefile) < (time() - $this->_setTTL)) {  
+		if (filemtime($cachefile) < (time() - $this->setTTL)) {  
             $this->clearCache($key);  
             return false;  
         }  
@@ -160,7 +160,7 @@ class Cache
 	 * Begins the section where caching begins
 	 * 
      * @access public
-     * @since 1.0.0
+     * @since 1.0.1
 	 * @return mixed
 	 */
 	public function setCache() {
@@ -177,7 +177,7 @@ class Cache
 	 * the cached file.
 	 * 
      * @access public
-     * @since 1.0.0
+     * @since 1.0.1
 	 * @return mixed
 	 */
 	public function getCache() {
@@ -196,7 +196,7 @@ class Cache
 	 * to the screen.
 	 * 
      * @access public
-     * @since 1.0.0
+     * @since 1.0.1
 	 * @param string (required) $filename Full path to the requested cache file
 	 * @return mixed
 	 */
@@ -215,7 +215,7 @@ class Cache
 	 * Writes cache data to be read
 	 * 
      * @access public
-     * @since 1.0.0
+     * @since 1.0.1
 	 * @param string (required) $data Data that should be cached
 	 * @param string (required) $filename Name of the cache file
 	 * @return mixed
@@ -235,12 +235,12 @@ class Cache
 	 * Checks if a cache file is valid
 	 * 
      * @access public
-     * @since 1.0.0
+     * @since 1.0.1
 	 * @param string (required) $filename Name of the cache file
 	 * @return mixed
 	 */
 	public function isCacheValid($filename) {
-		if(file_exists($filename) && (filemtime($filename) > (time() - $this->_setTTL))){
+		if(file_exists($filename) && (filemtime($filename) > (time() - $this->setTTL))){
 			return true;
 		}else{
 			return $this->addLog( 'Could not find filename: ' . $filename );	
@@ -251,7 +251,7 @@ class Cache
 	 * Execution time of the cached page
 	 * 
      * @access public
-     * @since 1.0.0
+     * @since 1.0.1
 	 * @return mixed
 	 */
 	public function pageLoad() {
@@ -267,12 +267,12 @@ class Cache
 	 * Clears the cache base on cache file name/key
 	 * 
      * @access public
-     * @since 1.0.0
+     * @since 1.0.1
 	 * @param string (required) $filename Key name of cache
 	 * @return mixed
 	 */
 	public function clearCache($filename) {
-		$cachelog = $this->_cachepath . md5($filename) . $this->_extension;
+		$cachelog = $this->_cachepath . md5($filename) . $this->extension;
 		if(file_exists($cachelog)) {
 			unlink($cachelog);
 		}
@@ -282,7 +282,7 @@ class Cache
 	 * Clears all cache files
 	 * 
      * @access public
-     * @since 1.0.0
+     * @since 1.0.1
 	 * @return mixed
 	 */
 	public function purge() {
@@ -295,7 +295,7 @@ class Cache
 	 * Prints a log if error occurs
 	 * 
      * @access public
-     * @since 1.0.0
+     * @since 1.0.1
 	 * @param mixed (required) $value Message that should be returned
 	 * @return mixed
 	 */
