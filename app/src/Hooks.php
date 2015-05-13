@@ -97,10 +97,9 @@ class Hooks
      * @access public
      * @since 1.0.1
      */
-    public function __construct($plugins_dir)
+    public function __construct(\Liten\Liten $liten = null)
     {
-        $this->_app = \Liten\Liten::getInstance();
-        $this->_plugins_dir = $plugins_dir;
+        $this->_app = !empty($liten) ? $liten : \Liten\Liten::getInstance();
     }
 
     /**
@@ -108,19 +107,19 @@ class Hooks
      *
      * @access public
      * @since 1.0.1
-     * @param string (optional) $this->_plugins_dir Loads plugins from specified folder
+     * @param string (optional) $plugins_dir Loads plugins from specified folder
      * @return mixed
      *
      */
-    public function get_plugins_header()
+    public function get_plugins_header($plugins_dir = '')
     {
 
-        if ($handle = opendir($this->_plugins_dir)) {
+        if ($handle = opendir($plugins_dir)) {
 
             while ($file = readdir($handle)) {
-                if (is_file($this->_plugins_dir . $file)) {
-                    if (strpos($this->_plugins_dir . $file, '.plugin.php')) {
-                        $fp = fopen($this->_plugins_dir . $file, 'r');
+                if (is_file($plugins_dir . $file)) {
+                    if (strpos($plugins_dir . $file, '.plugin.php')) {
+                        $fp = fopen($plugins_dir . $file, 'r');
                         // Pull only the first 8kiB of the file in.
                         $plugin_data = fread($fp, 8192);
                         fclose($fp);
@@ -142,8 +141,8 @@ class Hooks
                         $plugin_data = array('filename' => $file, 'Name' => $name, 'Title' => $name, 'PluginURI' => $uri, 'Description' => $description, 'Author' => $author_name, 'AuthorURI' => $author_uri, 'Version' => $version);
                         $this->_plugins_header [] = $plugin_data;
                     }
-                } else if ((is_dir($this->_plugins_dir . $file)) && ($file != '.') && ($file != '..')) {
-                    $this->get_plugins_header($this->_plugins_dir . $file . '/');
+                } else if ((is_dir($plugins_dir . $file)) && ($file != '.') && ($file != '..')) {
+                    $this->get_plugins_header($plugins_dir . $file . '/');
                 }
             }
 
@@ -184,9 +183,10 @@ class Hooks
      * 
      * @access public
      * @since 1.0.1
+     * @param string (optional) $plugins_dir Loads plugins from specified folder
      * @return mixed
      */
-    public function load_activated_plugins()
+    public function load_activated_plugins($plugins_dir = '')
     {
         $plugin = $this->_app->db->plugin();
         $q = $plugin->find(function($data) {
@@ -201,10 +201,10 @@ class Hooks
             $pluginFile = $v['location'];
             $plugin = str_replace('.plugin.php', '', $pluginFile);
 
-            if (!file_exists($this->_plugins_dir . $plugin . '/' . $pluginFile)) {
-                $file = $this->_plugins_dir . $pluginFile;
+            if (!file_exists($plugins_dir . $plugin . '/' . $pluginFile)) {
+                $file = $plugins_dir . $pluginFile;
             } else {
-                $file = $this->_plugins_dir . $plugin . '/' . $pluginFile;
+                $file = $plugins_dir . $plugin . '/' . $pluginFile;
             }
 
             if (file_exists($file)) {
@@ -363,12 +363,12 @@ class Hooks
      *
      * Typical use:
      *
-     * 		1) Modify a variable if a function is attached to hook 'hook'
-     * 		$var = "default value";
-     * 		$var = hooks::apply_filter( 'hook', $var );
+     *      1) Modify a variable if a function is attached to hook 'hook'
+     *      $var = "default value";
+     *      $var = hooks::apply_filter( 'hook', $var );
      *
-     * 		2) Trigger functions is attached to event 'pm_event'
-     * 		hooks::apply_filter( 'event' );
+     *      2) Trigger functions is attached to event 'pm_event'
+     *      hooks::apply_filter( 'event' );
      *       (see hooks::do_action() )
      * 
      * Returns an element which may have been filtered by a filter.
